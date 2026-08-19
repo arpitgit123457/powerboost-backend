@@ -10,7 +10,10 @@ const app = express()
 
 connectDB()
 
-app.use(cors())
+app.use(cors({
+  origin: process.env.CLIENT_URL || true,
+  credentials: true,
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
