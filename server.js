@@ -73,7 +73,7 @@ async function seedBannersOnStartup() {
 connectDB().then(() => seedBannersOnStartup())
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || true,
+  origin: true,
   credentials: true,
 }))
 app.use(express.json())
