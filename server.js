@@ -8,6 +8,8 @@ require('dotenv').config()
 
 const app = express()
 
+connectDB()
+
 app.use(cors({
   origin: process.env.CLIENT_URL || true,
   credentials: true,
@@ -57,13 +59,6 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
 
-connectDB()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`)
-    })
-  })
-  .catch((err) => {
-    console.error('Failed to start server:', err.message)
-    process.exit(1)
-  })
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`)
+})

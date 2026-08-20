@@ -10,11 +10,7 @@ const connectDB = async () => {
       dns.setServers(['8.8.8.8', '8.8.4.4'])
     } catch {}
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 30000,
-    })
+    const conn = await mongoose.connect(process.env.MONGODB_URI)
     console.log(`MongoDB connected: ${conn.connection.host}`)
 
     const db = conn.connection.db
@@ -24,12 +20,11 @@ const connectDB = async () => {
     return conn
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`)
-    throw error
   }
 }
 
 const getGFSBucket = () => {
-  if (!gfsBucket) throw new Error('GridFS bucket not initialized. Call connectDB first.')
+  if (!gfsBucket) throw new Error('GridFS bucket not initialized.')
   return gfsBucket
 }
 
