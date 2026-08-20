@@ -18,7 +18,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Backend is running' })
+  const dbState = require('mongoose').connection.readyState
+  const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' }
+  res.status(200).json({ status: 'ok', message: 'Backend is running', db: states[dbState] || dbState })
 })
 
 app.get('/api/images/:id', async (req, res) => {
