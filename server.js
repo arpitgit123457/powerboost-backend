@@ -1,4 +1,5 @@
 ﻿const path = require('path')
+const fs = require('fs')
 const express = require('express')
 const cors = require('cors')
 const { connectDB, getGFSBucket } = require('./config/db')
@@ -8,7 +9,68 @@ require('dotenv').config()
 
 const app = express()
 
-connectDB()
+async function seedBannersOnStartup() {
+  try {
+    const Banner = require('./models/Banner')
+    const count = await Banner.countDocuments()
+    if (count > 0) return
+
+    const imagesDir = path.join(__dirname, 'data', 'images')
+    const bannerData = [
+      {
+        eyebrow: 'India\u2019s Premium Men\u2019s Wellness Brand',
+        title: 'Last longer. Feel stronger.',
+        sub: 'Doctor-verified solutions for performance, stamina and confidence. Discreetly delivered.',
+        cta: 'Shop Products',
+        link: '#shop',
+        imageFile: 'banner1.jpg',
+        order: 1,
+      },
+      {
+        eyebrow: 'Clinically Dosed Capsules & Oils',
+        title: 'Build real stamina, naturally.',
+        sub: 'Ashwagandha, Shilajit and more \u2014 backed by science and trusted by 1,00,000+ men.',
+        cta: 'Explore Range',
+        link: '#shop',
+        imageFile: 'banner2.jpg',
+        order: 2,
+      },
+      {
+        eyebrow: '100% Private & Discreet',
+        title: 'Confidence, delivered to your door.',
+        sub: 'Plain packaging, free fast delivery and 24/7 support. Shop with total privacy.',
+        cta: 'Shop Now',
+        link: '#shop',
+        imageFile: 'banner3.jpg',
+        order: 3,
+      },
+    ]
+
+    for (const b of bannerData) {
+      let image = ''
+      const filePath = path.join(imagesDir, b.imageFile)
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath)
+        const bucket = getGFSBucket()
+        const ext = path.extname(b.imageFile).slice(1) || 'jpg'
+        const ct = `image/${ext === 'jpg' ? 'jpeg' : ext}`
+        const uploadStream = bucket.openUploadStream(b.imageFile, { contentType: ct })
+        await new Promise((resolve, reject) => {
+          uploadStream.on('error', reject)
+          uploadStream.on('finish', resolve)
+          uploadStream.end(buffer)
+        })
+        image = `/api/images/${uploadStream.id}`
+      }
+      await Banner.create({ eyebrow: b.eyebrow, title: b.title, sub: b.sub, cta: b.cta, link: b.link, image, order: b.order })
+    }
+    console.log('Banners seeded automatically')
+  } catch (err) {
+    console.error('Banner auto-seed failed:', err.message)
+  }
+}
+
+connectDB().then(() => seedBannersOnStartup())
 
 app.use(cors({
   origin: process.env.CLIENT_URL || true,
@@ -54,6 +116,7 @@ app.use('/api/products', require('./routes/productRoutes'))
 app.use('/api/orders', require('./routes/orderRoutes'))
 app.use('/api/categories', require('./routes/categoryRoutes'))
 app.use('/api/blogs', require('./routes/blogRoutes'))
+app.use('/api/banners', require('./routes/bannerRoutes'))
 app.use('/api/admin', require('./routes/adminRoutes'))
 
 app.use(notFound)
