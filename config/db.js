@@ -1,14 +1,20 @@
 ﻿const mongoose = require('mongoose')
-const dns = require('dns')
 require('dotenv').config()
-
-dns.setServers(['8.8.8.8', '8.8.4.4'])
 
 let gfsBucket = null
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI)
+    try {
+      const dns = require('dns')
+      dns.setServers(['8.8.8.8', '8.8.4.4'])
+    } catch {}
+
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+    })
     console.log(`MongoDB connected: ${conn.connection.host}`)
 
     const db = conn.connection.db
@@ -17,8 +23,8 @@ const connectDB = async () => {
 
     return conn
   } catch (error) {
-    console.error(`Error: ${error.message}`)
-    process.exit(1)
+    console.error(`MongoDB connection error: ${error.message}`)
+    throw error
   }
 }
 
