@@ -5,10 +5,12 @@ let gfsBucket = null
 
 const connectDB = async () => {
   try {
-    try {
-      const dns = require('dns')
-      dns.setServers(['8.8.8.8', '8.8.4.4'])
-    } catch {}
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const dns = require('dns')
+        dns.setServers(['8.8.8.8', '8.8.4.4'])
+      } catch {}
+    }
 
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 30000,
