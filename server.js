@@ -97,11 +97,16 @@ app.get('/api/images/:id', async (req, res) => {
 
     const file = files[0]
     res.set('Content-Type', file.contentType || 'image/jpeg')
-    res.set('Cache-Control', 'public, max-age=86400')
+    res.set('Cache-Control', 'public, max-age=604800, immutable')
+    res.set('ETag', `"${file._id}"`)
+
+    if (req.headers['if-none-match'] === `"${file._id}"`) {
+      return res.status(304).end()
+    }
 
     const downloadStream = bucket.openDownloadStream(fileId)
     downloadStream.on('error', () => {
-      res.status(404).json({ message: 'Error fetching image' })
+      if (!res.headersSent) res.status(404).json({ message: 'Error fetching image' })
     })
     downloadStream.pipe(res)
   } catch (error) {
