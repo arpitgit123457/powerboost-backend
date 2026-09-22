@@ -85,30 +85,74 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend is running', db: states[dbState] || dbState })
 })
 
+const imageCache = new Map()
+const IMAGE_CACHE_MAX = 100
+const IMAGE_CACHE_MAX_BYTES = 80 * 1024 * 1024
+
+function readGridFSBuffer(bucket, fileId) {
+  return new Promise((resolve, reject) => {
+    const stream = bucket.openDownloadStream(fileId)
+    const chunks = []
+    stream.on('data', (chunk) => chunks.push(chunk))
+    stream.on('error', reject)
+    stream.on('end', () => resolve(Buffer.concat(chunks)))
+  })
+}
+
 app.get('/api/images/:id', async (req, res) => {
   try {
-    const bucket = getGFSBucket()
-    const fileId = new ObjectId(req.params.id)
+    const fileId = req.params.id
+    const cached = imageCache.get(fileId)
+    if (cached) {
+      res.set('Content-Type', cached.contentType)
+      res.set('Content-Length', cached.buffer.length)
+      res.set('Cache-Control', 'public, max-age=604800, immutable')
+      res.set('ETag', `"${fileId}"`)
+      if (req.headers['if-none-match'] === `"${fileId}"`) {
+        return res.status(304).end()
+      }
+      return res.end(cached.buffer)
+    }
 
-    const files = await bucket.find({ _id: fileId }).toArray()
+    const bucket = getGFSBucket()
+    const objectId = new ObjectId(fileId)
+
+    const files = await bucket.find({ _id: objectId }).toArray()
     if (!files || files.length === 0) {
       return res.status(404).json({ message: 'Image not found' })
     }
 
     const file = files[0]
-    res.set('Content-Type', file.contentType || 'image/jpeg')
-    res.set('Cache-Control', 'public, max-age=604800, immutable')
-    res.set('ETag', `"${file._id}"`)
+    const buffer = await readGridFSBuffer(bucket, objectId)
+    const contentType = file.contentType || 'image/jpeg'
 
-    if (req.headers['if-none-match'] === `"${file._id}"`) {
+    imageCache.set(fileId, { buffer, contentType, at: Date.now() })
+    let totalBytes = 0
+    for (const entry of imageCache.values()) totalBytes += entry.buffer.length
+    while (imageCache.size > IMAGE_CACHE_MAX || totalBytes > IMAGE_CACHE_MAX_BYTES) {
+      let oldestId = null
+      let oldestAt = Infinity
+      for (const [key, entry] of imageCache.entries()) {
+        if (entry.at < oldestAt) {
+          oldestAt = entry.at
+          oldestId = key
+        }
+      }
+      if (!oldestId) break
+      totalBytes -= imageCache.get(oldestId).buffer.length
+      imageCache.delete(oldestId)
+    }
+
+    res.set('Content-Type', contentType)
+    res.set('Content-Length', buffer.length)
+    res.set('Cache-Control', 'public, max-age=604800, immutable')
+    res.set('ETag', `"${fileId}"`)
+
+    if (req.headers['if-none-match'] === `"${fileId}"`) {
       return res.status(304).end()
     }
 
-    const downloadStream = bucket.openDownloadStream(fileId)
-    downloadStream.on('error', () => {
-      if (!res.headersSent) res.status(404).json({ message: 'Error fetching image' })
-    })
-    downloadStream.pipe(res)
+    res.end(buffer)
   } catch (error) {
     res.status(400).json({ message: 'Invalid image ID' })
   }
