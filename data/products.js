@@ -1,9 +1,9 @@
 ﻿const products = [
   {
-    name: 'Powerbooster Oil',
+    name: 'Powerbooster Capsule',
     tagline: 'Natural stamina & energy booster',
     description:
-      'Powerbooster Oil is a herbal powerhouse crafted to boost stamina, energy and overall vitality. Made from natural herbs, ideal for daily wellness.',
+      'Powerbooster Capsule is a herbal powerhouse crafted to boost stamina, energy and overall vitality. Made from natural herbs, ideal for daily wellness.',
     category: 'Bold Supplements',
     price: 1299,
     mrp: 1500,

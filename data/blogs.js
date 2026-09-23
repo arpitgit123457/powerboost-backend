@@ -1,12 +1,12 @@
 ﻿const blogs = [
   {
-    title: 'Powerbooster Oil: Your Natural Stamina & Energy Booster',
-    slug: 'powerbooster-oil',
+    title: 'Powerbooster Capsule: Your Natural Stamina & Energy Booster',
+    slug: 'powerbooster-capsule',
     category: 'Bold Supplements',
     date: 'Sep 20, 2026',
     readTime: '4 min read',
-    desc: 'Everything you need to know about Powerbooster Oil — the herbal powerhouse crafted to boost stamina, energy and overall vitality.',
-    body: "Powerbooster Oil is a herbal powerhouse crafted to boost stamina, energy and overall vitality. Made from natural herbs, it is ideal for daily wellness — a clean, natural route to staying active through the day.\n\nHow to use: Take a small amount of oil, warm it slightly between your palms and massage gently over the desired area in slow, circular motions. It is meant for external use and can be added to your daily self-care routine.\n\nWhat to expect: With consistent use alongside a balanced lifestyle, many users notice steadier energy, better endurance and an overall uplift in wellbeing. It works best when paired with good sleep, balanced meals and regular movement.\n\nWho is it for: Men looking for a natural, herbal way to support daily stamina and vitality — no artificial shortcuts, just clean wellness support from nature.",
+    desc: 'Everything you need to know about Powerbooster Capsule — the herbal powerhouse crafted to boost stamina, energy and overall vitality.',
+    body: "Powerbooster Capsule is a herbal powerhouse crafted to boost stamina, energy and overall vitality. Made from natural herbs, it is ideal for daily wellness — a clean, natural route to staying active through the day.\n\nHow to use: Take 1 capsule daily with a glass of water, ideally at the same time each day after a meal. It can be easily added to your daily wellness routine.\n\nWhat to expect: With consistent use alongside a balanced lifestyle, many users notice steadier energy, better endurance and an overall uplift in wellbeing. It works best when paired with good sleep, balanced meals and regular movement.\n\nWho is it for: Men looking for a natural, herbal way to support daily stamina and vitality — no artificial shortcuts, just clean wellness support from nature.",
     image: 'https://powerboost-backend.onrender.com/api/images/6a9fc8ee4131460ea969c97e',
   },
   {
